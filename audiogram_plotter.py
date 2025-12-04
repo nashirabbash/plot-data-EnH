@@ -263,7 +263,7 @@ class AudiogramPlotter:
         ax.plot(freq_list, dbL, '-', color='r', 
                 marker='o', markersize=8, linewidth=2, label='Left Ear')
         for freq, db in zip(freq_list, dbL):
-            ax.text(freq, db + 3, f'{db:.1f}', 
+            ax.text(freq, db + 8, f'{db:.1f}', 
                    fontsize=8, ha='center', color='red')
         
         # Plot Right Ear
@@ -363,7 +363,7 @@ class AudiogramPlotter:
         ax.plot(valid_freq, valid_dbhl_L, '-', color='r', 
                 marker='o', markersize=8, linewidth=2, label='Left Ear')
         for freq, dbhl in zip(valid_freq, valid_dbhl_L):
-            ax.text(freq, dbhl + 3, f'{dbhl:.1f}', 
+            ax.text(freq, dbhl + 8, f'{dbhl:.1f}', 
                    fontsize=8, ha='center', color='red')
         
         # Plot Right Ear
