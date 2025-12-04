@@ -1,0 +1,15 @@
+# Audiogram Plotter - Enhanced Version
+# Dependencies untuk plotting audiogram dari Elbicare dan Pychoacoustics data
+
+# GUI Framework
+PyQt5>=5.15.0
+
+# Plotting dan Visualisasi
+matplotlib>=3.5.0
+
+# Numerical Computing
+numpy>=1.21.0
+
+# JSON support sudah built-in di Python
+# Regular expressions (re) sudah built-in di Python
+# OS dan pathlib sudah built-in di Python
