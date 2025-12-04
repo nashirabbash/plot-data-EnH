@@ -48,7 +48,7 @@ Aplikasi unified untuk plotting audiogram dari 2 jenis data berbeda: **Elbicare*
 ```
 plotEnh/
 ├── audiogram_plotter.py    # Main application
-├── calib_example.json       # Calibration file untuk Elbicare
+├── calib.json       # Calibration file untuk Elbicare
 ├── requirements.txt         # Dependencies list
 └── README.md                # Dokumentasi ini
 ```
