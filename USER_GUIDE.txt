@@ -1,0 +1,98 @@
+Audiogram Plotter - Panduan Pengguna
+
+Perkenalan
+- Aplikasi ini menampilkan audiogram dari dua format data yang umum digunakan:
+  1) Elbicare (file HT_*.TXT / JSON yang diekspor dari alat Elbicare)
+  2) Pychoacoustics (file TXT berisi nilai `turnpointMean`)
+
+Sebagai 'Mas Senior' — saya ajak Anda mundur sejenak: fokuskan pada tujuan
+utama: buka file data, convert level ke dB HL (menggunakan RETSPL bila perlu),
+dan tampilkan grafik audiogram yang standar.
+
+Lokasi file utama
+- Aplikasi (eksekutabel):
+  `d:\project web\playplay\pypypyp\plotEnh\dist\AudiogramPlotter.exe`
+- Script sumber (opsional rebuild):
+  `d:\project web\playplay\pypypyp\plotEnh\audiogram_plotter.py`
+- File kalibrasi yang dipakai di build:
+  `d:\project web\playplay\pypypyp\plotEnh\calib.json`
+
+Persyaratan (jika ingin menjalankan dari source)
+- Python 3.7+ (direkomendasikan 3.8–3.11)
+- Paket Python: `PyQt5`, `matplotlib`, `numpy`
+- Jika hendak membuat .exe: `PyInstaller` (script build otomatis ada)
+
+Menjalankan aplikasi (cara cepat)
+1. Double‑click file `AudiogramPlotter.exe` di folder `dist`. Aplikasi GUI akan
+   muncul langsung.
+
+Menjalankan dari source (opsional)
+1. Buka PowerShell di folder `d:\project web\playplay\pypypyp\plotEnh`.
+2. Buat virtualenv (rekomendasi):
+   `python -m venv .venv; .\.venv\Scripts\Activate.ps1`
+3. Install depedensi:
+   `pip install -r requirements.txt`
+4. Jalankan:
+   `python audiogram_plotter.py`
+
+Mencetak/men‑build .exe (opsional)
+- Script build disediakan: `build_exe.ps1`.
+- Dari PowerShell di folder tersebut jalankan:
+  `.\build_exe.ps1`
+- Hasil `.exe` akan ditulis ke: `dist\AudiogramPlotter.exe`.
+
+Ringkasan Fungsi GUI
+- Tombol `Plot Elbicare` : pilih file Elbicare (HT_*.TXT / JSON). Aplikasi akan
+  membaca nilai amplitude, menerapkan kalibrasi dari `calib.json`, dan plot
+  audiogram.
+- Tombol `Plot Pyco Acoustic` : pilih file TXT dari Pychoacoustics. Aplikasi
+  akan mengekstrak nilai `turnpointMean` (menggunakan pola teks) lalu
+  konversi dB SPL → dB HL memakai RETSPL (dbHL = dbSPL - RETSPL) sebelum plot.
+
+Standar Plot
+- Sumbu Y: dari -20 (atas) sampai 160 (bawah) — terbalik untuk tampilan
+  audiogram konvensional.
+- Sumbu X: frekuensi standar 125 Hz → 8000 Hz dalam skala log.
+- Perhitungan PTA (Pure Tone Average) otomatis untuk 500, 1000, 2000, 4000 Hz
+  ditampilkan bila data tersedia.
+
+Format File Input (ringkasan)
+- Elbicare: file teks bernama `HT_*.TXT` namun berisi JSON; aplikasi mengharapkan
+  struktur berisi array `ampl` (amplitudo) per kanal. Jika format berbeda,
+  sesuaikan atau hubungi pembuat data.
+- Pychoacoustics: file TXT biasa. Aplikasi mencari pola `turnpointMean` dan
+  membaca nilai-nilai numeriknya.
+
+Tips dan Troubleshooting
+- Aplikasi diuji pada Windows 10/11. Jika .exe tidak mau berjalan di PC lain,
+  cek:
+  - Apakah antivirus memblokir file baru? (beberapa AV mengkarantina exe buatan
+    lokal)
+  - Jalankan sebagai Administrator untuk uji awal jika diperlukan.
+- Jika menjalankan dari source dan GUI tidak muncul/Qt error:
+  - Pastikan `PyQt5` terinstall di environment yang sama.
+  - Jika muncul error plugin platform (qt.qpa.plugin), jalankan ulang build
+    PyInstaller dengan menambahkan data folder `PyQt5\Qt5\plugins\platforms`
+    ke opsi `--add-data`.
+- Jika plot tampak 'terbalik' atau nilai loudness aneh, periksa `calib.json` —
+  kalibrasi yang salah menyebabkan level output tidak akurat.
+
+Distribusi ke orang lain
+- Untuk distribusi mudah: kirim file `AudiogramPlotter.exe` dari folder `dist`.
+- Sertakan catatan singkat (README) tentang ukuran file dan bahwa exe tersebut
+  sudah standalone.
+
+Kontak / Catatan Developer
+- Jika butuh penyesuaian format input atau ada data yang tidak diparse dengan
+  benar, berikan contoh file (anonymized) supaya bisa ditambahkan dukungan
+  khusus.
+
+Terakhir — saran 'Mas Senior'
+- Pecah masalah bila ada bug: validasi data input dulu (cek jumlah frekuensi,
+  range), lalu cek konversi RETSPL, terakhir periksa bagian plotting.
+- Jangan langsung modifikasi `calib.json` tanpa menyimpan salinan cadangan.
+
+File ini dibuat untuk memudahkan pengguna non‑developer agar bisa menjalankan
+dan memakai aplikasi dengan langkah sederhana: double‑click pada `.exe`.
+
+Terima kasih, semoga membantu.
