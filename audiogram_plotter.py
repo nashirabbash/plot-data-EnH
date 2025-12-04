@@ -30,8 +30,18 @@ class AudiogramPlotter:
             8000: 15.5
         }
         
-        # Calibration file path for Elbicare
-        self.calib_file = os.path.join(os.path.dirname(__file__), "calib_example.json")
+        # Calibration file path for Elbicare (support PyInstaller frozen mode)
+        def resource_path(relative_path):
+            """Get absolute path to resource, works for dev and PyInstaller"""
+            if getattr(sys, 'frozen', False):
+                # Running in PyInstaller bundle
+                base_path = sys._MEIPASS
+            else:
+                # Running in normal Python environment
+                base_path = os.path.dirname(__file__)
+            return os.path.join(base_path, relative_path)
+        
+        self.calib_file = resource_path("calib.json")
         
         # GUI setup
         self.app = None
