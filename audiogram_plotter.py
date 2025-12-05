@@ -189,7 +189,8 @@ class AudiogramPlotter:
                 continue
             frequency = int(freq_match.group(1))
             
-            turnpoint_match = re.search(r'turnpointMean\s+=\s+([\d.]+)', block)
+            # PENTING: Pattern harus bisa match angka negatif juga (misal: -0.67)
+            turnpoint_match = re.search(r'turnpointMean\s+=\s+(-?[\d.]+)', block)
             if not turnpoint_match:
                 continue
             dbspl = float(turnpoint_match.group(1))
@@ -326,52 +327,64 @@ class AudiogramPlotter:
         
         for i in range(7):
             freq_key = f"freq_{i}"
+            freq_hz = freq_list[i]
             
-            if freq_key in pyco_data["audiogram"]["ch_0"]:
-                # Left ear
-                freq_hz = pyco_data["audiogram"]["ch_0"][freq_key]["freq_hz"]
+            # Cek kelengkapan data di KEDUA channel sebelum proses
+            has_left = freq_key in pyco_data["audiogram"]["ch_0"]
+            has_right = freq_key in pyco_data["audiogram"]["ch_1"]
+            
+            if has_left:
                 dbspl_L = pyco_data["audiogram"]["ch_0"][freq_key]["dbSPL"]
                 dbhl_L = dbspl_L - self.RETSPL[freq_hz]
                 dbhl_left.append(dbhl_L)
-                
-                # Right ear
+            else:
+                dbhl_left.append(None)
+            
+            if has_right:
                 dbspl_R = pyco_data["audiogram"]["ch_1"][freq_key]["dbSPL"]
                 dbhl_R = dbspl_R - self.RETSPL[freq_hz]
                 dbhl_right.append(dbhl_R)
             else:
-                dbhl_left.append(None)
                 dbhl_right.append(None)
         
-        # Remove None values
-        valid_freq = [f for f, d in zip(freq_list, dbhl_left) if d is not None]
+        # Filter data valid untuk masing-masing telinga (independen)
+        valid_freq_L = [f for f, d in zip(freq_list, dbhl_left) if d is not None]
+        valid_freq_R = [f for f, d in zip(freq_list, dbhl_right) if d is not None]
         valid_dbhl_L = [d for d in dbhl_left if d is not None]
         valid_dbhl_R = [d for d in dbhl_right if d is not None]
         
-        # Calculate PTA (indices for 500, 1000, 2000, 4000 Hz = 2,3,4,5)
-        if len(valid_dbhl_L) >= 6:
-            pta_L = (valid_dbhl_L[2] + valid_dbhl_L[3] + valid_dbhl_L[4] + valid_dbhl_L[5]) / 4
-            pta_R = (valid_dbhl_R[2] + valid_dbhl_R[3] + valid_dbhl_R[4] + valid_dbhl_R[5]) / 4
-        else:
-            pta_L = sum(valid_dbhl_L) / len(valid_dbhl_L) if valid_dbhl_L else 0
-            pta_R = sum(valid_dbhl_R) / len(valid_dbhl_R) if valid_dbhl_R else 0
+        # Cek apakah ada data sama sekali
+        if not valid_dbhl_L and not valid_dbhl_R:
+            raise ValueError("No valid audiogram data found in file")
+        
+        # Calculate PTA (500, 1000, 2000, 4000 Hz = indices 2,3,4,5)
+        # Gunakan data yang ada saja untuk PTA
+        pta_freqs = [500, 1000, 2000, 4000]
+        pta_L_values = [dbhl_left[i] for i, f in enumerate(freq_list) if f in pta_freqs and dbhl_left[i] is not None]
+        pta_R_values = [dbhl_right[i] for i, f in enumerate(freq_list) if f in pta_freqs and dbhl_right[i] is not None]
+        
+        pta_L = sum(pta_L_values) / len(pta_L_values) if pta_L_values else 0
+        pta_R = sum(pta_R_values) / len(pta_R_values) if pta_R_values else 0
         
         # Plot
         mplt.close()
         fig, ax = mplt.subplots(figsize=(10, 6))
         
-        # Plot Left Ear
-        ax.plot(valid_freq, valid_dbhl_L, '-', color='r', 
-                marker='o', markersize=8, linewidth=2, label='Left Ear')
-        for freq, dbhl in zip(valid_freq, valid_dbhl_L):
-            ax.text(freq, dbhl + 8, f'{dbhl:.1f}', 
-                   fontsize=8, ha='center', color='red')
+        # Plot Left Ear (jika ada data)
+        if valid_dbhl_L:
+            ax.plot(valid_freq_L, valid_dbhl_L, '-', color='r', 
+                    marker='o', markersize=8, linewidth=2, label='Left Ear')
+            for freq, dbhl in zip(valid_freq_L, valid_dbhl_L):
+                ax.text(freq, dbhl + 8, f'{dbhl:.1f}', 
+                       fontsize=8, ha='center', color='red')
         
-        # Plot Right Ear
-        ax.plot(valid_freq, valid_dbhl_R, '--', color='b', 
-                marker='x', markersize=8, linewidth=2, label='Right Ear')
-        for freq, dbhl in zip(valid_freq, valid_dbhl_R):
-            ax.text(freq, dbhl - 4, f'{dbhl:.1f}', 
-                   fontsize=8, ha='center', color='blue')
+        # Plot Right Ear (jika ada data)
+        if valid_dbhl_R:
+            ax.plot(valid_freq_R, valid_dbhl_R, '--', color='b', 
+                    marker='x', markersize=8, linewidth=2, label='Right Ear')
+            for freq, dbhl in zip(valid_freq_R, valid_dbhl_R):
+                ax.text(freq, dbhl - 4, f'{dbhl:.1f}', 
+                       fontsize=8, ha='center', color='blue')
         
         # Formatting
         ax.set_xscale('log')
@@ -416,8 +429,10 @@ class AudiogramPlotter:
         print("="*60)
         print(f"{'Freq (Hz)':<12} {'Left Ear':<15} {'Right Ear':<15}")
         print("-"*60)
-        for i, freq in enumerate(valid_freq):
-            print(f"{freq:<12} {valid_dbhl_L[i]:>10.2f} dB HL {valid_dbhl_R[i]:>10.2f} dB HL")
+        for i, freq in enumerate(freq_list):
+            left_val = f"{dbhl_left[i]:>10.2f} dB HL" if dbhl_left[i] is not None else "      N/A"
+            right_val = f"{dbhl_right[i]:>10.2f} dB HL" if dbhl_right[i] is not None else "      N/A"
+            print(f"{freq:<12} {left_val:<15} {right_val:<15}")
         print("="*60)
         print(f"\nPTA Left:  {pta_L:.2f} dB HL")
         print(f"PTA Right: {pta_R:.2f} dB HL")
