@@ -9,7 +9,7 @@ Aplikasi unified untuk plotting audiogram dari 2 jenis data berbeda: **Elbicare*
 - **Format file**: HT\_\*.TXT (JSON format dengan field `ampl`)
 - **Frekuensi**: 250 Hz - 8000 Hz (standar audiogram, skip 125 Hz)
 - **Kalibrasi**: Otomatis load `calib_example.json`
-- **Output**: Plot dalam **dBA** (sesuai kalibrasi)
+- **Output**: Plot dalam **dBHL** (sesuai kalibrasi)
 
 ### 2. Plot Pychoacoustics
 
@@ -48,7 +48,7 @@ Aplikasi unified untuk plotting audiogram dari 2 jenis data berbeda: **Elbicare*
 ```
 plotEnh/
 ├── audiogram_plotter.py    # Main application
-├── calib_example.json       # Calibration file untuk Elbicare
+├── calib.json       # Calibration file untuk Elbicare
 ├── requirements.txt         # Dependencies list
 └── README.md                # Dokumentasi ini
 ```
